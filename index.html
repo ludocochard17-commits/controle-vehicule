@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contrôle véhicule</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b1220">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b1220">
   <style>
     :root{
       --bg1:#0b1220; --bg2:#020617;
@@ -372,6 +372,14 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({unit:'mm', format:'a4'});
 
+    // ✅ MODIF: on force le "titre interne" du PDF (pour ne plus voir github sur iPhone)
+    doc.setProperties({
+      title: 'Contrôle véhicule',
+      subject: 'Contrôle véhicule',
+      author: '',
+      creator: ''
+    });
+
     const tech = document.getElementById('tech').value.trim();
     const veh  = document.getElementById('veh').value.trim();
     const typeTxt = typeEl.options[typeEl.selectedIndex].text;
@@ -458,9 +466,16 @@
       }
     }
 
-    const safeVeh = veh.replace(/[^\w\-]+/g,'_');
-    const safeTech = tech.replace(/[^\w\-]+/g,'_');
-    const filename = `Controle_${safeVeh}_${safeTech}.pdf`;
+    // ✅ nom de fichier PROPRE (véhicule + tech + date)
+    const safe = (s)=> (s||'').trim().replace(/[^a-zA-Z0-9_-]+/g,'_');
+    const d = new Date();
+    const jj = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const aa = d.getFullYear();
+
+    const safeVeh = safe(veh);
+    const safeTech = safe(tech);
+    const filename = `Controle_vehicule_${safeVeh}_${safeTech}_${jj}-${mm}-${aa}.pdf`;
 
     doc.save(filename);
     return filename;
