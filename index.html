@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contrôle véhicule</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1220">
+  <style>
+    :root{
+      --bg1:#0b1220; --bg2:#020617;
+      --card:#0f172a; --card2:#0b1220;
+      --text:#e5e7eb; --muted:#94a3b8;
+      --line:rgba(255,255,255,.10);
+      --blue:#2563eb; --red:#dc2626; --green:#16a34a;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1000px 600px at 20% -10%, rgba(37,99,235,.35), transparent 60%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(20,184,166,.20), transparent 55%),
+                  linear-gradient(180deg, var(--bg1), var(--bg2));
+      color:var(--text);
+    }
+    header{
+      padding:18px 22px;
+      font-weight:700; font-size:20px;
+      background: rgba(2,6,23,.6);
+      border-bottom:1px solid var(--line);
+      position:sticky; top:0; backdrop-filter: blur(10px);
+      z-index:10;
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:22px}
+    .card{
+      background: linear-gradient(180deg, rgba(15,23,42,.9), rgba(11,18,32,.9));
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    @media (max-width:900px){ .grid2{grid-template-columns:1fr} }
+    label{display:block; font-size:13px; color:var(--muted); margin:6px 0 6px}
+    input, textarea, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(2,6,23,.55);
+      color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:90px; resize:vertical}
+    input::placeholder, textarea::placeholder{color:rgba(148,163,184,.75)}
+    .hint{
+      margin-top:10px; font-size:12px; color:var(--muted);
+      display:flex; gap:8px; align-items:flex-start;
+    }
+    .hint b{color:var(--text)}
+    h2{margin:0 0 10px; font-size:18px}
+    .sub{color:var(--muted); font-size:13px; margin-top:-4px; margin-bottom:10px}
+    .photos-grid{
+      display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+    }
+    @media (max-width:900px){ .photos-grid{grid-template-columns:1fr} }
+    .pbox{
+      background: rgba(2,6,23,.45);
+      border:1px dashed rgba(255,255,255,.15);
+      border-radius: 16px;
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1fr auto auto;
+      gap:10px;
+      align-items:center;
+    }
+    .ptitle{font-weight:700}
+    .pstatus{font-size:12px; color:var(--muted); margin-top:2px}
+    .thumb{
+      grid-column: 1 / -1;
+      display:none;
+      margin-top:8px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+    }
+    .thumb img{display:block; width:100%; max-height:220px; object-fit:cover}
+    .btn{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:700;
+      display:inline-flex;
+      gap:8px; align-items:center;
+      user-select:none;
+    }
+    .btn.primary{background: rgba(37,99,235,.95); border-color: rgba(37,99,235,.6)}
+    .btn.danger{background: rgba(220,38,38,.92); border-color: rgba(220,38,38,.55)}
+    .btn.ghost{background: rgba(255,255,255,.04)}
+    .btn:active{transform: translateY(1px)}
+    .bar{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start;
+      align-items:center;
+    }
+    .badge{
+      padding:8px 10px; border-radius:999px; font-size:12px;
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+    }
+    .ok{color:#bbf7d0}
+    .warn{color:#fde68a}
+    .err{color:#fecaca}
+    .sep{height:1px; background:rgba(255,255,255,.10); margin:14px 0}
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+<header>Contrôle véhicule</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <label>Nom / Prénom du technicien <b style="color:#fff">*</b></label>
+        <input id="tech" placeholder="Ex : Ludovik Cochard" />
+      </div>
+      <div>
+        <label>Véhicule (immat ou nom) <b style="color:#fff">*</b></label>
+        <input id="veh" placeholder="Ex : BK-951-BZ / Trafic" />
+      </div>
+
+      <div>
+        <label>Type de contrôle <b style="color:#fff">*</b></label>
+        <select id="type">
+          <option value="bimensuel">Bimensuel – Photos</option>
+          <option value="mensuel">Mensuel – Vérifications</option>
+        </select>
+      </div>
+      <div>
+        <label>Date / heure</label>
+        <input id="dt" disabled />
+        <div class="hint">Auto-remplie.</div>
+      </div>
+    </div>
+
+    <label>Remarques (optionnel)</label>
+    <textarea id="rem" placeholder="Ex : RAS / défaut constaté / à surveiller…"></textarea>
+
+    <div class="hint">✅ Génère un <b>PDF avec photos intégrées</b> (3 pages photos : Cabine / Intérieur / Extérieur).</div>
+  </div>
+
+  <div class="card" id="mensuelCard">
+    <h2>Vérifications (mensuel)</h2>
+    <div class="sub">À remplir uniquement en “Mensuel – Vérifications”.</div>
+
+    <div class="grid2">
+      <div>
+        <label>Niveaux vérifiés ?</label>
+        <select id="niv">
+          <option value="">—</option>
+          <option>Oui</option>
+          <option>Non</option>
+        </select>
+      </div>
+      <div>
+        <label>État des pneus</label>
+        <select id="pneus">
+          <option value="">—</option>
+          <option>Bon</option>
+          <option>À changer</option>
+        </select>
+      </div>
+      <div>
+        <label>Voyants allumés ?</label>
+        <select id="voy">
+          <option value="">—</option>
+          <option>Oui</option>
+          <option>Non</option>
+        </select>
+      </div>
+      <div>
+        <label>Feux tous en service ?</label>
+        <select id="feux">
+          <option value="">—</option>
+          <option>Oui</option>
+          <option>Non</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Photos</h2>
+    <div class="sub">Bimensuel : 9 photos obligatoires (Cabine 3 / Intérieur 2 / Extérieur 4). Mensuel : photos optionnelles.</div>
+
+    <div class="sep"></div>
+
+    <div class="photos-grid" id="photosGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="bar">
+      <button class="btn primary" id="gen">📄 Générer le PDF</button>
+      <button class="btn ghost" id="share" disabled>📤 Partager</button>
+      <button class="btn danger" id="reset">🧹 Réinitialiser</button>
+      <span class="badge" id="status">Prêt</span>
+    </div>
+    <div class="hint">Le PDF se <b>télécharge automatiquement</b>. “Partager” dépend du navigateur.</div>
+  </div>
+
+</div>
+
+<!-- jsPDF -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<script>
+  // Date auto
+  const dtEl = document.getElementById('dt');
+  function pad(n){return String(n).padStart(2,'0')}
+  function nowStr(){
+    const d=new Date();
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  dtEl.value = nowStr();
+  setInterval(()=> dtEl.value = nowStr(), 10000);
+
+  const typeEl = document.getElementById('type');
+  const mensuelCard = document.getElementById('mensuelCard');
+  const statusEl = document.getElementById('status');
+  const shareBtn = document.getElementById('share');
+
+  function setStatus(txt, cls){
+    statusEl.textContent = txt;
+    statusEl.classList.remove('ok','warn','err');
+    if(cls) statusEl.classList.add(cls);
+  }
+
+  // Photo config
+  const photoDefs = [
+    {key:'cab_sol',   title:'Cabine – sol',        group:'Cabine'},
+    {key:'cab_siege', title:'Cabine – siège',      group:'Cabine'},
+    {key:'cab_dash',  title:'Cabine – tableau de bord', group:'Cabine'},
+    {key:'int_1',     title:'Intérieur – arrière 1', group:'Intérieur'},
+    {key:'int_2',     title:'Intérieur – arrière 2', group:'Intérieur'},
+    {key:'ext_1',     title:'Extérieur – 1',       group:'Extérieur'},
+    {key:'ext_2',     title:'Extérieur – 2',       group:'Extérieur'},
+    {key:'ext_3',     title:'Extérieur – 3',       group:'Extérieur'},
+    {key:'ext_4',     title:'Extérieur – 4',       group:'Extérieur'},
+  ];
+
+  const photos = {}; // key -> {file, dataUrl}
+
+  const grid = document.getElementById('photosGrid');
+
+  function makePhotoBox(def){
+    const box = document.createElement('div');
+    box.className='pbox';
+    box.dataset.key = def.key;
+
+    const left = document.createElement('div');
+    const t = document.createElement('div');
+    t.className='ptitle';
+    t.textContent = def.title;
+    const s = document.createElement('div');
+    s.className='pstatus';
+    s.textContent='Aucune photo';
+    left.appendChild(t); left.appendChild(s);
+
+    const btnTake = document.createElement('button');
+    btnTake.className='btn';
+    btnTake.type='button';
+    btnTake.textContent='📷 Prendre photo';
+
+    const btnDel = document.createElement('button');
+    btnDel.className='btn danger';
+    btnDel.type='button';
+    btnDel.textContent='🗑️';
+
+    const input = document.createElement('input');
+    input.type='file';
+    input.accept='image/*';
+    input.capture='environment';
+    input.className='hidden';
+
+    const thumb = document.createElement('div');
+    thumb.className='thumb';
+    const img = document.createElement('img');
+    thumb.appendChild(img);
+
+    btnTake.onclick = ()=> input.click();
+
+    input.onchange = async ()=>{
+      const f = input.files && input.files[0];
+      if(!f) return;
+      const dataUrl = await fileToDataURL(f);
+      photos[def.key] = {file:f, dataUrl, title:def.title, group:def.group};
+      s.textContent = f.name ? `OK (${Math.round(f.size/1024)} ko)` : 'OK';
+      thumb.style.display='block';
+      img.src = dataUrl;
+      validate();
+    };
+
+    btnDel.onclick = ()=>{
+      delete photos[def.key];
+      input.value = '';
+      s.textContent='Aucune photo';
+      thumb.style.display='none';
+      img.src='';
+      validate();
+    };
+
+    box.appendChild(left);
+    box.appendChild(btnTake);
+    box.appendChild(btnDel);
+    box.appendChild(input);
+    box.appendChild(thumb);
+    return box;
+  }
+
+  function fileToDataURL(file){
+    return new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = ()=>res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Render boxes
+  photoDefs.forEach(d=> grid.appendChild(makePhotoBox(d)));
+
+  function validate(){
+    const tech = document.getElementById('tech').value.trim();
+    const veh  = document.getElementById('veh').value.trim();
+    const type = typeEl.value;
+
+    if(!tech || !veh){
+      setStatus('Infos manquantes (nom / véhicule)', 'warn');
+      return false;
+    }
+    if(type==='bimensuel'){
+      const need = photoDefs.length;
+      const have = Object.keys(photos).length;
+      if(have < need){
+        setStatus(`Photos manquantes : ${need-have}/9`, 'warn');
+        return false;
+      }
+    }
+    setStatus('OK', 'ok');
+    return true;
+  }
+
+  typeEl.onchange = ()=>{
+    mensuelCard.style.display = (typeEl.value==='mensuel') ? 'block' : 'none';
+    validate();
+  };
+  mensuelCard.style.display = 'none';
+
+  document.getElementById('tech').addEventListener('input', validate);
+  document.getElementById('veh').addEventListener('input', validate);
+
+  // PDF creation
+  async function makePDF(){
+    if(!validate()) return null;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'mm', format:'a4'});
+
+    const tech = document.getElementById('tech').value.trim();
+    const veh  = document.getElementById('veh').value.trim();
+    const typeTxt = typeEl.options[typeEl.selectedIndex].text;
+    const dt = dtEl.value;
+    const rem = document.getElementById('rem').value.trim() || '—';
+
+    const mensuel = (typeEl.value==='mensuel');
+    const niv = document.getElementById('niv').value || '—';
+    const pneus = document.getElementById('pneus').value || '—';
+    const voy = document.getElementById('voy').value || '—';
+    const feux = document.getElementById('feux').value || '—';
+
+    // PAGE 1: résumé
+    doc.setFont('helvetica','bold'); doc.setFontSize(16);
+    doc.text('CONTRÔLE VÉHICULE', 14, 18);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(11);
+    doc.text(`Date : ${dt}`, 14, 28);
+    doc.text(`Technicien : ${tech}`, 14, 35);
+    doc.text(`Véhicule : ${veh}`, 14, 42);
+    doc.text(`Type de contrôle : ${typeTxt}`, 14, 49);
+
+    doc.setFont('helvetica','bold'); doc.text('Remarques :', 14, 60);
+    doc.setFont('helvetica','normal');
+    doc.text(doc.splitTextToSize(rem, 180), 14, 67);
+
+    if(mensuel){
+      doc.setFont('helvetica','bold'); doc.text('VÉRIFICATIONS (Mensuel)', 14, 92);
+      doc.setFont('helvetica','normal');
+      doc.text(`Niveaux vérifiés : ${niv}`, 14, 101);
+      doc.text(`État des pneus : ${pneus}`, 14, 108);
+      doc.text(`Voyants allumés : ${voy}`, 14, 115);
+      doc.text(`Feux tous en service : ${feux}`, 14, 122);
+    }
+
+    // helper to add photo pages
+    const groups = ['Cabine','Intérieur','Extérieur'];
+    for(const g of groups){
+      doc.addPage();
+      doc.setFont('helvetica','bold'); doc.setFontSize(14);
+      doc.text(`PHOTOS — ${g.toUpperCase()}`, 14, 18);
+
+      const items = photoDefs.filter(d=>d.group===g).map(d=>photos[d.key]).filter(Boolean);
+      if(items.length===0){
+        doc.setFont('helvetica','normal'); doc.setFontSize(11);
+        doc.text('Aucune photo.', 14, 30);
+        continue;
+      }
+
+      // layout: 2 per row
+      let x = 14, y = 28;
+      const w = 88, h = 62;
+      const gapX = 10, gapY = 12;
+
+      for(let i=0;i<items.length;i++){
+        const it = items[i];
+        doc.setFont('helvetica','bold'); doc.setFontSize(10);
+        doc.text(it.title, x, y);
+
+        // image box
+        const imgY = y+3;
+        try{
+          doc.addImage(it.dataUrl, 'JPEG', x, imgY, w, h);
+        }catch(e){
+          // fallback if PNG
+          doc.addImage(it.dataUrl, 'PNG', x, imgY, w, h);
+        }
+
+        // next position
+        if((i%2)===0){
+          x = x + w + gapX;
+        }else{
+          x = 14;
+          y = y + h + gapY + 8;
+        }
+
+        // page overflow
+        if(y > 240){
+          doc.addPage();
+          doc.setFont('helvetica','bold'); doc.setFontSize(14);
+          doc.text(`PHOTOS — ${g.toUpperCase()} (suite)`, 14, 18);
+          x=14; y=28;
+        }
+      }
+    }
+
+    const safeVeh = veh.replace(/[^\w\-]+/g,'_');
+    const safeTech = tech.replace(/[^\w\-]+/g,'_');
+    const filename = `Controle_${safeVeh}_${safeTech}.pdf`;
+
+    doc.save(filename);
+    return filename;
+  }
+
+  document.getElementById('gen').onclick = async ()=>{
+    setStatus('Génération PDF…', 'warn');
+    const fn = await makePDF();
+    if(fn){
+      setStatus('PDF généré ✅', 'ok');
+      shareBtn.disabled = false;
+      shareBtn.dataset.filename = fn;
+    }else{
+      setStatus('Corrige les champs requis', 'err');
+    }
+  };
+
+  // Share (si supporté)
+  document.getElementById('share').onclick = async ()=>{
+    // Sur PC: souvent non supporté => on laisse l’utilisateur partager le PDF téléchargé
+    alert("Le PDF est téléchargé. Partage-le via Mail / WhatsApp depuis ton dossier Téléchargements.");
+  };
+
+  document.getElementById('reset').onclick = ()=>{
+    document.getElementById('tech').value='';
+    document.getElementById('veh').value='';
+    document.getElementById('rem').value='';
+    document.getElementById('niv').value='';
+    document.getElementById('pneus').value='';
+    document.getElementById('voy').value='';
+    document.getElementById('feux').value='';
+    Object.keys(photos).forEach(k=>delete photos[k]);
+
+    // reset UI photo boxes
+    [...document.querySelectorAll('.pbox')].forEach(box=>{
+      const s = box.querySelector('.pstatus');
+      const input = box.querySelector('input[type=file]');
+      const thumb = box.querySelector('.thumb');
+      const img = thumb.querySelector('img');
+      s.textContent='Aucune photo';
+      input.value='';
+      thumb.style.display='none';
+      img.src='';
+    });
+
+    shareBtn.disabled = true;
+    setStatus('Prêt', null);
+    validate();
+  };
+
+  validate();
+</script>
+</body>
+</html>
